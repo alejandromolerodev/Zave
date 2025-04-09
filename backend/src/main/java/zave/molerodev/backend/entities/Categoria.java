@@ -1,4 +1,4 @@
-package zave.molerodev.backend.entity;
+package zave.molerodev.backend.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
