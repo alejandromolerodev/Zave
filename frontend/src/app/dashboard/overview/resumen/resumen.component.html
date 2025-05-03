@@ -1,0 +1,24 @@
+<div class="container">
+  <h1>Bienvenido a Zave 👋</h1>
+  <p>Este es tu panel principal de resumen financiero.</p>
+
+  <div class="card">
+    <h2>Resumen mensual</h2>
+    <p><strong>Ingresos Totales:</strong> ${{ ingresosTotales }}</p>
+    <p><strong>Gastos Totales:</strong> ${{ gastosTotales }}</p>
+    <p><strong>Ahorro Mensual:</strong> ${{ ahorroMensual }}</p>
+    <p>
+      <strong>Porcentaje de Ahorro:</strong>
+      {{ porcentajeAhorro.toFixed(2) }}%
+    </p>
+
+    <div *ngIf="alertas.length > 0" class="alert">
+      <h3>Alertas:</h3>
+      <ul>
+        <li *ngFor="let alerta of alertas">{{ alerta }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <canvas id="graficaResumen" width="400" height="200"></canvas>
+</div>

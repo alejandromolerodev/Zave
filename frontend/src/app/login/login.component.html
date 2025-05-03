@@ -1,0 +1,35 @@
+<div class="login-container">
+  <h2 *ngIf="!modoRegistro">Iniciar sesión</h2>
+  <h2 *ngIf="modoRegistro">Registrarse</h2>
+
+  <form (ngSubmit)="modoRegistro ? onRegister() : onLogin()">
+    <input
+      type="email"
+      [(ngModel)]="email"
+      name="email"
+      placeholder="Correo electrónico"
+      required
+    />
+    <input
+      type="password"
+      [(ngModel)]="password"
+      name="password"
+      placeholder="Contraseña"
+      required
+    />
+
+    <button type="submit">
+      {{ modoRegistro ? "Registrarse" : "Iniciar sesión" }}
+    </button>
+  </form>
+
+  <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+
+  <a (click)="modoRegistro = !modoRegistro" class="toggle-link">
+    {{
+      modoRegistro
+        ? "¿Ya tienes cuenta? Inicia sesión"
+        : "¿No tienes cuenta? Regístrate"
+    }}
+  </a>
+</div>
