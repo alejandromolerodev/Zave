@@ -1,90 +1,118 @@
 package zave.molerodev.backend.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import zave.molerodev.backend.entities.User;
+import zave.molerodev.backend.entities.Usuario;
+import zave.molerodev.backend.model.AuthRequest;
 import zave.molerodev.backend.service.UserService;
 
 @RestController
 @RequestMapping("/api/zave/user")
+@CrossOrigin(origins = "http://localhost:4200")
 public class UserController {
 
     @Autowired
     private UserService userService;
 
+    // Registro de un usuario sin autenticación
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody AuthRequest request) {
+        if (userService.findByEmail(request.getEmail()) != null) {
+            return ResponseEntity.status(400).body("Ya existe un usuario con ese correo");
+        }
+    
+        Usuario newUser = new Usuario();
+        newUser.setEmail(request.getEmail());
+        newUser.setPassword(request.getPassword());
+        newUser.setRol("USER");
+        newUser.setUsername(request.getNombre());
+    
+        userService.save(newUser);
+        return ResponseEntity.ok(Map.of("userId", newUser.getId())); // 👈 Esto es clave
+    }
+    
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+        Usuario user = userService.findByEmail(request.getEmail());
+        if (user == null) {
+            return ResponseEntity.status(401).body("Credenciales inválidas");
+        }
+    
+        return ResponseEntity.ok(Map.of("userId", user.getId())); // 👈 También aquí
+    }
+    
 
+
+
+
+    // Obtención de todos los usuarios
     @GetMapping("/all")
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<Usuario>> getAllUsers() {
         return ResponseEntity.ok(userService.findAll());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(Long id) {
+    // Obtención de un usuario por ID
+    @GetMapping("/id/{id}")
+    public ResponseEntity<Usuario> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.findById(id));
     }
 
-    @GetMapping("/{email}")
-    public ResponseEntity<User> getUserByEmail(String email) {
+    // Obtención de un usuario por email
+    @GetMapping("/email/{email}")
+    public ResponseEntity<Usuario> getUserByEmail(@PathVariable String email) {
         return ResponseEntity.ok(userService.findByEmail(email));
     }
 
-    @GetMapping("/{username}")
-    public ResponseEntity<User> getUserByUsername(String username) {
-        return ResponseEntity.ok(userService.findByUsername(username));
+    @GetMapping("/username/{id}")
+    public ResponseEntity<String> getUsernameById(@PathVariable Long id) {
+        Usuario user = userService.findById(id);
+        if (user == null) {
+            return ResponseEntity.status(404).body("Usuario no encontrado");
+        }
+        return ResponseEntity.ok(user.getUsername());
     }
 
+    // Creación de un usuario
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
+    public ResponseEntity<Usuario> createUser(@RequestBody Usuario user) {
         return ResponseEntity.ok(userService.save(user));
     }
 
-
+    // Actualización de un usuario por ID
     @PutMapping("/id/{id}")
-    public ResponseEntity<User> updateUserById(@PathVariable Long id, @RequestBody User user) {
-        User existingUser = userService.findById(id);
+    public ResponseEntity<Usuario> updateUserById(@PathVariable Long id, @RequestBody Usuario user) {
+        Usuario existingUser = userService.findById(id);
         if (existingUser == null) {
             return ResponseEntity.notFound().build();
         }
-
-        // Aseguramos que el ID en el user coincida con el path variable
-        user.setId_usuario(id);
-
-        User updatedUser = userService.update(user);
-        return ResponseEntity.ok(updatedUser);
+        user.setId(id);
+        return ResponseEntity.ok(userService.update(user));
     }
 
+    // Actualización de un usuario por email
     @PutMapping("/email/{email}")
-    public ResponseEntity<User> updateUserByEmail(@PathVariable String email, @RequestBody User user) {
-        User existingUser = userService.findByEmail(email);
+    public ResponseEntity<Usuario> updateUserByEmail(@PathVariable String email, @RequestBody Usuario user) {
+        Usuario existingUser = userService.findByEmail(email);
         if (existingUser == null) {
             return ResponseEntity.notFound().build();
         }
-        user.setId_usuario(existingUser.getId_usuario()); // Para que el update funcione bien
-        
-        User updatedUser = userService.update(user);
-        return ResponseEntity.ok(updatedUser);
+        user.setId(existingUser.getId());
+        return ResponseEntity.ok(userService.update(user));
     }
 
-
-    @DeleteMapping("/{id}")
+    // Eliminación de un usuario por ID
+    @DeleteMapping("/id/{id}")
     public ResponseEntity<Void> deleteUserById(@PathVariable Long id) {
-        User existingUser = userService.findById(id);
+        Usuario existingUser = userService.findById(id);
         if (existingUser == null) {
             return ResponseEntity.notFound().build();
         }
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
-    
 }

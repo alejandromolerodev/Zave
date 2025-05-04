@@ -18,7 +18,7 @@ public class Gasto {
 
     @ManyToOne
     @JoinColumn(name = "id_usuario")
-    private User usuario;
+    private Usuario usuario;
 
     @ManyToOne
     @JoinColumn(name = "id_categoria")
@@ -33,4 +33,62 @@ public class Gasto {
     private BigDecimal importe;
 
     private LocalDate fecha;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
+    }
+
+    public Cuenta getCuenta() {
+        return cuenta;
+    }
+
+    public void setCuenta(Cuenta cuenta) {
+        this.cuenta = cuenta;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public BigDecimal getImporte() {
+        return importe;
+    }
+
+    public void setImporte(BigDecimal importe) {
+        this.importe = importe;
+    }
+
+    public LocalDate getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
+    }
+
+    
 }

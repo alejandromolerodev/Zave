@@ -3,6 +3,16 @@
   <h2 *ngIf="modoRegistro">Registrarse</h2>
 
   <form (ngSubmit)="modoRegistro ? onRegister() : onLogin()">
+    <div *ngIf="modoRegistro">
+      <input
+        type="text"
+        [(ngModel)]="nombre"
+        name="nombre"
+        placeholder="Nombre completo"
+        required
+      />
+    </div>
+
     <input
       type="email"
       [(ngModel)]="email"
@@ -10,6 +20,7 @@
       placeholder="Correo electrónico"
       required
     />
+
     <input
       type="password"
       [(ngModel)]="password"

@@ -19,7 +19,7 @@ public class ResumenMensual {
 
     @ManyToOne
     @JoinColumn(name = "id_usuario")
-    private User usuario;
+    private Usuario usuario;
 
     private YearMonth mes; // Formato: YYYY-MM
 
@@ -28,8 +28,4 @@ public class ResumenMensual {
     private BigDecimal totalGastos;
 
     private BigDecimal totalAhorro;
-
-    @ManyToOne
-    @JoinColumn(name = "id_plan_ahorro_usado")
-    private PlanAhorro planAhorro;
 }

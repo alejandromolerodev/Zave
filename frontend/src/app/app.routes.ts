@@ -1,10 +1,10 @@
 import { Routes } from "@angular/router";
 import { ResumenComponent } from "./dashboard/overview/resumen/resumen.component";
 import { LoginComponent } from "./login/login.component";
-import { authGuard } from "./services/auth.guard"; // asegúrate de que la ruta sea correcta
+import { AuthGuard } from "./services/auth.guard"; // Asegúrate de tener el guard importado
 
 export const routes: Routes = [
   { path: "login", component: LoginComponent },
-  { path: "resumen", component: ResumenComponent, canActivate: [authGuard] },
+  { path: "resumen", component: ResumenComponent, canActivate: [AuthGuard] }, // Ruta protegida
   { path: "", redirectTo: "login", pathMatch: "full" },
 ];

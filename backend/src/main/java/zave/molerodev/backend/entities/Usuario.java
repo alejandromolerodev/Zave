@@ -1,15 +1,16 @@
 package zave.molerodev.backend.entities;
 
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
-public class User {
+public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_usuario;
+    private Long id;  // Cambié de id_usuario a id
 
-    private String nombre;
+    private String username;
 
     private String email;
 
@@ -17,24 +18,23 @@ public class User {
 
     private String rol;
 
-    @ManyToOne
-    @JoinColumn(name = "id_plan_activo", nullable = true)
-    private PlanAhorro planAhorroActivo;
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Cuenta> cuentas;
 
-    public Long getId_usuario() {
-        return id_usuario;
+    public Long getId() {  // Cambié de getId_usuario a getId
+        return id;
     }
 
-    public void setId_usuario(Long id_usuario) {
-        this.id_usuario = id_usuario;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public String getNombre() {
-        return nombre;
+    public String getUsername() {
+        return username;
     }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getEmail() {
@@ -61,15 +61,11 @@ public class User {
         this.rol = rol;
     }
 
-    public PlanAhorro getPlanAhorroActivo() {
-        return planAhorroActivo;
+    public List<Cuenta> getCuentas() {
+        return cuentas;
     }
 
-    public void setPlanAhorroActivo(PlanAhorro planAhorroActivo) {
-        this.planAhorroActivo = planAhorroActivo;
+    public void setCuentas(List<Cuenta> cuentas) {
+        this.cuentas = cuentas;
     }
-
-
-    
-
 }
