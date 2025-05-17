@@ -30,9 +30,17 @@ select.form-select {
   border-radius: 5px;
 }
 
-canvas {
+.grafica-container {
+  width: 100%;
+  max-width: 500px; /* ancho máximo */
+  height: 300px; /* altura fija más pequeña */
+  margin: 0 auto; /* centrar */
+  position: relative;
+}
+
+.grafica-container canvas {
   width: 100% !important;
-  height: auto;
+  height: 100% !important;
 }
 
 .mt-3 {

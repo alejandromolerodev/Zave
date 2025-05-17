@@ -18,6 +18,7 @@ public class IngresoService {
     public List<Ingreso> findByCuenta(Cuenta cuenta) {
         return ingresoRepository.findByCuenta(cuenta);
     }
+   
     public Ingreso save(Ingreso ingreso) {
         return ingresoRepository.save(ingreso);
     }

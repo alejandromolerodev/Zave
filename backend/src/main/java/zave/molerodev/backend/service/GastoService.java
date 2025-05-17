@@ -18,6 +18,7 @@ public class GastoService {
     public List<Gasto> findByCuenta(Cuenta cuenta) {
         return gastoRepository.findByCuenta(cuenta);
     }
+   
     public Gasto save(Gasto gasto) {
         return gastoRepository.save(gasto);
     }

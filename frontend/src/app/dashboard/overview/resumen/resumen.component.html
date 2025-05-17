@@ -1,99 +1,202 @@
-<div class="container">
-  <h1>Bienvenido a Zave 👋, {{ usuarioNombre || "Cargando..." }}</h1>
+<div class="container py-4">
+  <h1 class="mb-4">
+    Bienvenido a Zave 👋, {{ usuarioNombre || "Cargando..." }}
+  </h1>
   <p>Este es tu panel principal de resumen financiero.</p>
 
   <!-- Selector de Cuenta -->
-  <div class="card">
-    <h2>Selecciona una Cuenta</h2>
+  <div class="card mb-4 p-3 shadow-sm">
+    <h2 class="h5 mb-3">Selecciona una Cuenta</h2>
     <select
-      (change)="onCuentaSeleccionada($event)"
-      class="form-select"
+      [(ngModel)]="selectedCuenta"
+      (ngModelChange)="onCuentaSeleccionada($event)"
+      class="form-select mb-3"
       aria-label="Seleccionar Cuenta"
     >
-      <option *ngFor="let cuenta of cuentas" [value]="cuenta.id">
+      <option *ngFor="let cuenta of cuentas" [ngValue]="cuenta">
         {{ cuenta.nombre }}
       </option>
     </select>
+    <button (click)="irACrearCuenta()" class="btn btn-info">
+      Crear Nueva Cuenta
+    </button>
   </div>
 
-  <!-- Resumen Mensual de la Cuenta Seleccionada -->
-  <div class="card mt-3">
-    <h2>Resumen Mensual</h2>
-    <p>
-      <strong>Cuenta Seleccionada:</strong>
-      {{ selectedCuenta?.nombre || "Ninguna seleccionada" }}
-    </p>
-    <p><strong>Ingresos Totales:</strong> ${{ ingresosTotales.toFixed(2) }}</p>
-    <p><strong>Gastos Totales:</strong> ${{ gastosTotales.toFixed(2) }}</p>
-    <p><strong>Ahorro Mensual:</strong> ${{ ahorroMensual.toFixed(2) }}</p>
-    <p>
-      <strong>Porcentaje de Ahorro:</strong>
-      {{ porcentajeAhorro.toFixed(2) }}%
-    </p>
+  <!-- Resumen Mensual -->
+  <div class="card mb-4 p-3 shadow-sm">
+    <h2 class="h5 mb-3">
+      Resumen Financiero de {{ usuarioNombre || "Cargando..." }}
+    </h2>
+    <ul class="list-unstyled mb-0">
+      <li>
+        <strong>Cuenta Seleccionada:</strong>
+        {{ selectedCuenta?.nombre || "Ninguna seleccionada" }}
+      </li>
+      <li>
+        <strong>Saldo:</strong> ${{
+          selectedCuenta?.saldo?.toFixed(2) || "0.00"
+        }}
+      </li>
+      <li>
+        <strong>Ingresos Totales:</strong> ${{ ingresosTotales.toFixed(2) }}
+      </li>
+      <li><strong>Gastos Totales:</strong> ${{ gastosTotales.toFixed(2) }}</li>
+      <li><strong>Ahorro Mensual:</strong> ${{ ahorroMensual.toFixed(2) }}</li>
+      <li>
+        <strong>Porcentaje de Ahorro:</strong>
+        {{ porcentajeAhorro.toFixed(2) }}%
+      </li>
+    </ul>
 
-    <div *ngIf="alertas.length > 0" class="alert alert-warning">
-      <h3>Alertas:</h3>
-      <ul>
+    <div *ngIf="alertas.length > 0" class="alert alert-warning mt-3 p-2">
+      <h3 class="h6 mb-2">Alertas:</h3>
+      <ul class="mb-0">
         <li *ngFor="let alerta of alertas">{{ alerta }}</li>
       </ul>
     </div>
   </div>
 
   <!-- Gráfico -->
-  <div class="card mt-3">
-    <h2>Gráfico Resumen</h2>
-    <canvas id="graficaResumen" width="400" height="200"></canvas>
+  <div class="card mb-4 p-3 shadow-sm">
+    <h2 class="h5 mb-3">Gráfico Resumen</h2>
+    <button (click)="cambiarTipoGrafica()" class="btn btn-primary mb-3">
+      Cambiar Tipo de Gráfica
+    </button>
+    <div class="grafica-container">
+      <canvas id="graficaResumen"></canvas>
+    </div>
   </div>
 
-  <!-- Formularios para agregar ingresos o gastos -->
-  <div *ngIf="mostrarFormularioIngreso" class="card mt-3">
-    <h2>Agregar Ingreso</h2>
-    <div class="form-group">
-      <label for="nuevoIngreso">Monto del Ingreso</label>
-      <input
-        type="number"
-        id="nuevoIngreso"
-        class="form-control"
-        [(ngModel)]="nuevoIngreso"
-        min="1"
-        placeholder="Ingrese el monto"
-      />
-    </div>
-    <button (click)="agregarIngreso()" class="btn btn-primary mt-2">
+  <!-- Formulario Ingreso -->
+  <div *ngIf="mostrarFormularioIngreso" class="card p-3 mb-4 shadow-sm">
+    <h3 class="h6 mb-3">Agregar Ingreso</h3>
+    <form (ngSubmit)="agregarIngreso()" class="row g-3">
+      <div class="col-md-3">
+        <label for="ingresoImporte" class="form-label">Importe</label>
+        <input
+          id="ingresoImporte"
+          type="number"
+          [(ngModel)]="nuevoIngreso"
+          name="nuevoIngreso"
+          class="form-control"
+          placeholder="0.00"
+          required
+          min="0"
+          step="0.01"
+        />
+      </div>
+
+      <div class="col-md-3">
+        <label for="ingresoCategoria" class="form-label">Categoría</label>
+        <input
+          id="ingresoCategoria"
+          type="text"
+          [(ngModel)]="ingresoCategoria"
+          name="ingresoCategoria"
+          class="form-control"
+          placeholder="Categoría"
+          required
+        />
+      </div>
+
+      <div class="col-md-4">
+        <label for="ingresoDescripcion" class="form-label">Descripción</label>
+        <input
+          id="ingresoDescripcion"
+          type="text"
+          [(ngModel)]="ingresoDescripcion"
+          name="ingresoDescripcion"
+          class="form-control"
+          placeholder="Descripción"
+        />
+      </div>
+
+      <div class="col-md-2">
+        <label for="ingresoFecha" class="form-label">Fecha</label>
+        <input
+          id="ingresoFecha"
+          type="date"
+          [(ngModel)]="ingresoFecha"
+          name="ingresoFecha"
+          class="form-control"
+          required
+        />
+      </div>
+
+      <div class="col-12">
+        <button type="submit" class="btn btn-success">Agregar Ingreso</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Formulario Gasto -->
+  <div *ngIf="mostrarFormularioGasto" class="card p-3 mb-4 shadow-sm">
+    <h3 class="h6 mb-3">Agregar Gasto</h3>
+    <form (ngSubmit)="agregarGasto()" class="row g-3">
+      <div class="col-md-3">
+        <label for="gastoImporte" class="form-label">Importe</label>
+        <input
+          id="gastoImporte"
+          type="number"
+          [(ngModel)]="nuevoGasto"
+          name="nuevoGasto"
+          class="form-control"
+          placeholder="0.00"
+          required
+          min="0"
+          step="0.01"
+        />
+      </div>
+
+      <div class="col-md-3">
+        <label for="gastoCategoria" class="form-label">Categoría</label>
+        <input
+          id="gastoCategoria"
+          type="text"
+          [(ngModel)]="gastoCategoria"
+          name="gastoCategoria"
+          class="form-control"
+          placeholder="Categoría"
+          required
+        />
+      </div>
+
+      <div class="col-md-4">
+        <label for="gastoDescripcion" class="form-label">Descripción</label>
+        <input
+          id="gastoDescripcion"
+          type="text"
+          [(ngModel)]="gastoDescripcion"
+          name="gastoDescripcion"
+          class="form-control"
+          placeholder="Descripción"
+        />
+      </div>
+
+      <div class="col-md-2">
+        <label for="gastoFecha" class="form-label">Fecha</label>
+        <input
+          id="gastoFecha"
+          type="date"
+          [(ngModel)]="gastoFecha"
+          name="gastoFecha"
+          class="form-control"
+          required
+        />
+      </div>
+
+      <div class="col-12">
+        <button type="submit" class="btn btn-warning">Agregar Gasto</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Botones para mostrar formularios -->
+  <div class="card p-3 shadow-sm">
+    <button (click)="toggleFormularioIngreso()" class="btn btn-success me-2">
       Agregar Ingreso
     </button>
-    <button (click)="toggleFormularioIngreso()" class="btn btn-secondary mt-2">
-      Cancelar
-    </button>
-  </div>
-
-  <div *ngIf="mostrarFormularioGasto" class="card mt-3">
-    <h2>Agregar Gasto</h2>
-    <div class="form-group">
-      <label for="nuevoGasto">Monto del Gasto</label>
-      <input
-        type="number"
-        id="nuevoGasto"
-        class="form-control"
-        [(ngModel)]="nuevoGasto"
-        min="1"
-        placeholder="Ingrese el monto"
-      />
-    </div>
-    <button (click)="agregarGasto()" class="btn btn-danger mt-2">
-      Agregar Gasto
-    </button>
-    <button (click)="toggleFormularioGasto()" class="btn btn-secondary mt-2">
-      Cancelar
-    </button>
-  </div>
-
-  <!-- Botones para mostrar los formularios -->
-  <div class="card mt-3">
-    <button (click)="toggleFormularioIngreso()" class="btn btn-success">
-      Agregar Ingreso
-    </button>
-    <button (click)="toggleFormularioGasto()" class="btn btn-warning ml-2">
+    <button (click)="toggleFormularioGasto()" class="btn btn-warning">
       Agregar Gasto
     </button>
   </div>

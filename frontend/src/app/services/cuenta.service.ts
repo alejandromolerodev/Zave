@@ -6,7 +6,7 @@ import { Observable } from "rxjs";
   providedIn: "root",
 })
 export class CuentaService {
-  private apiUrl = "/api/zave/usuario";
+  private apiUrl = "http://localhost:8080/api/zave/cuenta";
 
   constructor(private http: HttpClient) {}
 
@@ -25,17 +25,38 @@ export class CuentaService {
     return this.http.get(`${this.apiUrl}/gastos/${cuentaId}`);
   }
 
+  getSaldoDeCuenta(cuentaId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/saldo/${cuentaId}`);
+  }
+
   // Agregar un nuevo ingreso
-  agregarIngreso(cuentaId: number, ingreso: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/ingresos/${cuentaId}`, {
-      importe: ingreso,
-    });
+  agregarIngreso(
+    cuentaId: number,
+    ingreso: {
+      importe: number;
+      categoria: string;
+      descripcion: string;
+      fecha: string;
+    },
+  ): Observable<any> {
+    return this.http.post(`${this.apiUrl}/ingresos/${cuentaId}`, ingreso);
   }
 
   // Agregar un nuevo gasto
-  agregarGasto(cuentaId: number, gasto: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/gastos/${cuentaId}`, {
-      importe: gasto,
-    });
+  agregarGasto(
+    cuentaId: number,
+    gasto: {
+      importe: number;
+      categoria: string;
+      descripcion: string;
+      fecha: string;
+    },
+  ): Observable<any> {
+    return this.http.post(`${this.apiUrl}/gastos/${cuentaId}`, gasto);
+  }
+
+  // Crear una nueva cuenta asociada a un usuario
+  crearCuenta(userId: number, cuentaData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/usuario/${userId}`, cuentaData);
   }
 }

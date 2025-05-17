@@ -1,0 +1,53 @@
+<div class="container mt-4 p-4 shadow rounded bg-light">
+  <h2 class="mb-4 text-primary">Crear Nueva Cuenta</h2>
+
+  <form (ngSubmit)="crearCuenta()">
+    <!-- Nombre de la Cuenta -->
+    <div class="mb-3">
+      <label for="nombre" class="form-label">Nombre de la Cuenta</label>
+      <input
+        type="text"
+        class="form-control"
+        id="nombre"
+        [(ngModel)]="nombre"
+        name="nombre"
+        required
+        maxlength="50"
+        placeholder="Ej: Mi cuenta de ahorros"
+      />
+    </div>
+
+    <!-- Tipo de Cuenta -->
+    <div class="mb-3">
+      <label for="tipo" class="form-label">Tipo de Cuenta</label>
+      <input
+        type="text"
+        class="form-control"
+        id="tipo"
+        [(ngModel)]="tipo"
+        name="tipo"
+        required
+        maxlength="30"
+        placeholder="Ej: Ahorro, Corriente"
+      />
+    </div>
+
+    <!-- Saldo Inicial -->
+    <div class="mb-3">
+      <label for="saldo" class="form-label">Saldo Inicial</label>
+      <input
+        type="number"
+        class="form-control"
+        id="saldo"
+        [(ngModel)]="saldo"
+        name="saldo"
+        required
+        min="0"
+        step="0.01"
+        placeholder="Ej: 1000.00"
+      />
+    </div>
+
+    <button type="submit" class="btn btn-success w-100">Crear Cuenta</button>
+  </form>
+</div>

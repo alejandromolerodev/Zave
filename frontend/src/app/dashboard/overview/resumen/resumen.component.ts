@@ -3,34 +3,44 @@ import { CuentaService } from "../../../services/cuenta.service";
 import { UserService } from "../../../services/user.service";
 import { CommonModule } from "@angular/common";
 import { Router } from "@angular/router";
-
 import Chart from "chart.js/auto";
-
-import { FormsModule } from "@angular/forms"; // Add this import
-
+import { FormsModule } from "@angular/forms";
 import { AuthService } from "../../../services/auth.service";
 import { forkJoin } from "rxjs";
 
 @Component({
   selector: "app-resumen",
   standalone: true,
-  imports: [CommonModule, FormsModule], // Add FormsModule here
+  imports: [CommonModule, FormsModule],
   templateUrl: "./resumen.component.html",
   styleUrls: ["./resumen.component.css"],
 })
 export class ResumenComponent implements OnInit {
-  usuarioNombre: string = ""; // Variable para almacenar el nombre del usuario
+  usuarioNombre: string = "";
   ingresosTotales: number = 0;
+  saldo: number = 0;
   gastosTotales: number = 0;
   ahorroMensual: number = 0;
   porcentajeAhorro: number = 0;
   alertas: string[] = [];
+  tipoGrafica: "doughnut" | "bar" = "doughnut";
 
   cuentas: any[] = [];
   selectedCuenta: any = null;
   chart: any = null;
+
+  // Campos para ingreso
   nuevoIngreso: number = 0;
+  ingresoCategoria: string = "";
+  ingresoDescripcion: string = "";
+  ingresoFecha: string = "";
+
+  // Campos para gasto
   nuevoGasto: number = 0;
+  gastoCategoria: string = "";
+  gastoDescripcion: string = "";
+  gastoFecha: string = "";
+
   mostrarFormularioIngreso: boolean = false;
   mostrarFormularioGasto: boolean = false;
 
@@ -50,7 +60,6 @@ export class ResumenComponent implements OnInit {
       this.userService.getUserNameFromBackend(userId).subscribe(
         (username) => {
           this.usuarioNombre = username;
-          console.log("Usuario Nombre: ", this.usuarioNombre); // Verifica si el nombre es correcto
         },
         (error) => {
           console.error("Error al obtener el nombre de usuario", error);
@@ -80,18 +89,18 @@ export class ResumenComponent implements OnInit {
     forkJoin({
       ingresos: this.cuentaService.getIngresosDeCuenta(cuentaId),
       gastos: this.cuentaService.getGastosDeCuenta(cuentaId),
+      saldo: this.cuentaService.getSaldoDeCuenta(cuentaId),
     }).subscribe(
-      ({ ingresos, gastos }) => {
+      ({ ingresos, gastos, saldo }) => {
         this.ingresosTotales = ingresos.reduce(
           (sum: number, ingreso: any) => sum + ingreso.importe,
           0,
         );
-
         this.gastosTotales = gastos.reduce(
           (sum: number, gasto: any) => sum + gasto.importe,
           0,
         );
-
+        this.saldo = saldo;
         this.ahorroMensual = this.ingresosTotales - this.gastosTotales;
         this.porcentajeAhorro =
           this.ingresosTotales > 0
@@ -115,34 +124,64 @@ export class ResumenComponent implements OnInit {
 
   dibujarGrafica(): void {
     const ctx = document.getElementById("graficaResumen") as HTMLCanvasElement;
-
     if (this.chart) {
       this.chart.destroy();
     }
 
+    const colores = ["#FF9800", "#4CAF50", "#F44336", "#2196F3"];
+    const labels = ["Saldo", "Ingresos", "Gastos", "Ahorro"];
+    const datos = [
+      this.saldo,
+      this.ingresosTotales,
+      this.gastosTotales,
+      this.ahorroMensual,
+    ];
+    const isBarChart = this.tipoGrafica === "bar";
+
     this.chart = new Chart(ctx, {
-      type: "doughnut",
+      type: this.tipoGrafica,
       data: {
-        labels: ["Ingresos", "Gastos", "Ahorro"],
-        datasets: [
-          {
-            label: "Resumen Financiero",
-            data: [
-              this.ingresosTotales,
-              this.gastosTotales,
-              this.ahorroMensual,
+        labels: isBarChart ? [""] : labels,
+        datasets: isBarChart
+          ? labels.map((label, i) => ({
+              label,
+              data: [datos[i]],
+              backgroundColor: colores[i],
+              borderColor: colores[i],
+              borderWidth: 1,
+            }))
+          : [
+              {
+                label: "Resumen Financiero",
+                data: datos,
+                backgroundColor: colores,
+                borderColor: colores,
+                borderWidth: 1,
+              },
             ],
-            backgroundColor: ["#4CAF50", "#F44336", "#2196F3"],
-          },
-        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: isBarChart
+          ? {
+              y: {
+                beginAtZero: true,
+              },
+            }
+          : {},
       },
     });
   }
 
-  onCuentaSeleccionada(event: Event): void {
-    const selectElement = event.target as HTMLSelectElement;
-    const cuentaId = selectElement.value;
-    this.cargarIngresosYGastos(Number(cuentaId)); // Convierte el cuentaId a número
+  cambiarTipoGrafica(): void {
+    this.tipoGrafica = this.tipoGrafica === "doughnut" ? "bar" : "doughnut";
+    this.dibujarGrafica();
+  }
+
+  onCuentaSeleccionada(cuenta: any): void {
+    this.selectedCuenta = cuenta;
+    this.cargarIngresosYGastos(cuenta.id);
   }
 
   toggleFormularioIngreso(): void {
@@ -153,33 +192,110 @@ export class ResumenComponent implements OnInit {
     this.mostrarFormularioGasto = !this.mostrarFormularioGasto;
   }
 
-  agregarIngreso(): void {
-    if (this.selectedCuenta && this.nuevoIngreso > 0) {
+  actualizarSaldo(cuentaId: number): void {
+    this.cuentaService.getSaldoDeCuenta(cuentaId).subscribe(
+      (nuevoSaldo) => {
+        this.saldo = nuevoSaldo;
+        if (this.selectedCuenta) {
+          this.selectedCuenta.saldo = nuevoSaldo;
+        }
+        this.dibujarGrafica();
+      },
+      (error) => {
+        console.error("Error al actualizar el saldo", error);
+      },
+    );
+  }
+
+  agregarGasto(): void {
+    if (
+      this.selectedCuenta &&
+      this.nuevoGasto > 0 &&
+      this.gastoCategoria &&
+      this.gastoDescripcion &&
+      this.gastoFecha
+    ) {
+      const gastoData = {
+        importe: this.nuevoGasto,
+        categoria: this.gastoCategoria,
+        descripcion: this.gastoDescripcion,
+        fecha: this.gastoFecha,
+      };
+
       this.cuentaService
-        .agregarIngreso(this.selectedCuenta.id, this.nuevoIngreso)
+        .agregarGasto(this.selectedCuenta.id, gastoData)
         .subscribe(
-          (response) => {
+          () => {
+            this.actualizarSaldo(this.selectedCuenta.id);
+            this.gastosTotales += this.nuevoGasto;
+            this.ahorroMensual = this.ingresosTotales - this.gastosTotales;
+            this.porcentajeAhorro =
+              this.ingresosTotales > 0
+                ? (this.ahorroMensual / this.ingresosTotales) * 100
+                : 0;
+            this.alertas = [];
+            if (this.porcentajeAhorro < 20) {
+              this.alertas.push(
+                "Cuidado, tu porcentaje de ahorro está por debajo del 20% recomendado.",
+              );
+            }
+
+            this.nuevoGasto = 0;
+            this.gastoCategoria = "";
+            this.gastoDescripcion = "";
+            this.gastoFecha = "";
+            this.toggleFormularioGasto();
+          },
+          (error) => console.error("Error al agregar gasto", error),
+        );
+    }
+  }
+
+  agregarIngreso(): void {
+    if (
+      this.selectedCuenta &&
+      this.nuevoIngreso > 0 &&
+      this.ingresoCategoria &&
+      this.ingresoDescripcion &&
+      this.ingresoFecha
+    ) {
+      const ingresoData = {
+        importe: this.nuevoIngreso,
+        categoria: this.ingresoCategoria,
+        descripcion: this.ingresoDescripcion,
+        fecha: this.ingresoFecha,
+      };
+
+      this.cuentaService
+        .agregarIngreso(this.selectedCuenta.id, ingresoData)
+        .subscribe(
+          () => {
+            this.actualizarSaldo(this.selectedCuenta.id);
+            this.ingresosTotales += this.nuevoIngreso;
+            this.ahorroMensual = this.ingresosTotales - this.gastosTotales;
+            this.porcentajeAhorro =
+              this.ingresosTotales > 0
+                ? (this.ahorroMensual / this.ingresosTotales) * 100
+                : 0;
+            this.alertas = [];
+            if (this.porcentajeAhorro < 20) {
+              this.alertas.push(
+                "Cuidado, tu porcentaje de ahorro está por debajo del 20% recomendado.",
+              );
+            }
+
             this.nuevoIngreso = 0;
+            this.ingresoCategoria = "";
+            this.ingresoDescripcion = "";
+            this.ingresoFecha = "";
             this.toggleFormularioIngreso();
-            this.cargarIngresosYGastos(this.selectedCuenta.id); // Actualizar los datos
           },
           (error) => console.error("Error al agregar ingreso", error),
         );
     }
   }
 
-  agregarGasto(): void {
-    if (this.selectedCuenta && this.nuevoGasto > 0) {
-      this.cuentaService
-        .agregarGasto(this.selectedCuenta.id, this.nuevoGasto)
-        .subscribe(
-          (response) => {
-            this.nuevoGasto = 0;
-            this.toggleFormularioGasto();
-            this.cargarIngresosYGastos(this.selectedCuenta.id); // Actualizar los datos
-          },
-          (error) => console.error("Error al agregar gasto", error),
-        );
-    }
+  irACrearCuenta(): void {
+    this.router.navigate(["/crear-cuenta"]);
   }
 }

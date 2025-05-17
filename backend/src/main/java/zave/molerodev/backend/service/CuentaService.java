@@ -34,21 +34,17 @@ public class CuentaService {
         return cuentaRepository.findByUsuarioId(userId);
     }
 
-    // Obtener los ingresos de una cuenta específica
-    public List<Ingreso> findIngresosByCuenta(Long cuentaId) {
-        Cuenta cuenta = findById(cuentaId);
-        if (cuenta != null) {
-            return ingresoRepository.findByCuenta(cuenta);
-        }
-        return null;
+    public List<Gasto> findGastosByCuenta(Cuenta cuenta) {
+        return gastoRepository.findByCuenta(cuenta);
     }
+    public List<Ingreso> findIngresosByCuenta(Cuenta cuenta) {
+        return ingresoRepository.findByCuenta(cuenta);
+    }
+    
 
-    // Obtener los gastos de una cuenta específica
-    public List<Gasto> findGastosByCuenta(Long cuentaId) {
-        Cuenta cuenta = findById(cuentaId);
-        if (cuenta != null) {
-            return gastoRepository.findByCuenta(cuenta);
-        }
-        return null;
+
+    // Crear una nueva cuenta
+    public Cuenta save(Cuenta cuenta) {
+        return cuentaRepository.save(cuenta);
     }
 }
